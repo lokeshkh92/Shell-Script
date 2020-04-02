@@ -1,0 +1,26 @@
+#!/bin/sh
+GZDIR=/DiskPCap/roamware2/Roamware/logs/ris/txnprocessor/out/ss7trace_vhadl_test
+export GZDIR
+
+GZLIST=`find "$GZDIR" -name '*.gz' -print`
+
+Hour=$(date +"%H")
+Minute=$(date +"%M")
+
+for FILE in ${GZLIST}
+        do
+                RecordHour=`zcat $FILE | awk -F, '{print $1}' | head -1 | awk -F ' ' '{print $2}' | awk -F ':' '{print $1}'`
+                RecordMinute=`zcat $FILE | awk -F, '{print $1}' | head -1 | awk -F ' ' '{print $2}' | awk -F ':' '{print $2}'`
+                if [ "$Hour" -gt "$RecordHour" ]; then
+                        hdfs dfs -put $FILE input/SS7/
+                elif [ "$Hour" -eq "$RecordHour" ] && [ "$Minute" -ge "$RecordMinute" ]; then
+                        hdfs dfs -put $FILE input/SS7/
+                else
+                        echo 'Rahul said, "time yet to come to put files"'
+                fi
+        echo $Hour
+        echo $Minute
+        echo $RecordHour
+        echo $RecordMinute
+        echo $FILE
+done
